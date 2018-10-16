@@ -1,0 +1,47 @@
+const int C -> 3 ++ 2;
+const bool B -> True;
+fun cuentaAtras recives [int [2][2] a2 ] returns nothing{ 
+  {declare: int i; int c; bool t;}
+	for (i -> 1, i > 0, i -> i -- 1) do [
+		c -> i -- (i * i); 
+		i -> c;
+	] ;
+	c -> 44;
+	i -> 55;
+	t -> B;
+}
+fun delfin recives [int [2][2] a2 , int f] returns int { 
+  {declare: int res; int B;}
+	call cuentaAtras[a2];
+	res -> a2[1][0] ++ f; 
+	a2[1][0] -> a2[1][0];
+	B -> 69;
+	return res; 
+} 
+begin [ 
+{declare: int x; int y; bool z; bool [2][2] arr;}
+	arr[0][1] -> True;
+	arr[1][0] -> False; 
+	[
+	{declare: bool C; int B;}
+		C -> False;
+		B -> 0;
+		if(B <= 0) do [
+		  B -> 2;
+		] else [
+		  B -> 3;
+		];
+	]
+ 	for (x -> 0, x <= 1, x -> x++1) do [
+		{declare: int [2][2] arr;}
+		arr[0][1] -> 1;
+		arr[1][0] -> 2;
+  	 	switch (x) case 0: [y -> 5;]                 
+  		           case 1: [y -> 3; x -> call delfin[arr,x] ++ 2;];   
+	];  
+	arr[0][1] -> True;
+	arr[1][0] -> False; 
+	z -> B AND False;
+] 
+end
+ 

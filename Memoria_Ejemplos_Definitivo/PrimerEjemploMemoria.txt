@@ -1,0 +1,21 @@
+const int A -> 100;
+const bool B -> True;
+fun suma recives [int a1, int a2] returns int{
+ {declare: int res;}
+    res -> a1 ++ a2;
+    return res;
+}
+begin[
+ {declare: int c; int d; int res; bool encontrado;}
+    encontrado -> False; c -> 0; d -> 0;
+    while (!!encontrado) do [
+      c -> c * d ++ (2 ++ 3);
+      d -> d ++ 1;
+      c -> call suma [c,d];
+      if (!! (c <= A)) do [
+        encontrado -> B;
+      ];
+    ];
+    res -> c/4;
+]
+end

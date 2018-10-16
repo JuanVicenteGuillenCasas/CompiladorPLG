@@ -1,0 +1,45 @@
+const int X -> 0;
+const int Y -> 2;
+const int Z -> 1;
+fun elijoPlato recives [int [3] platos, int elijo] returns int{ 
+  {declare: int res;}
+	switch (elijo) case 0: [res -> platos[0];]
+		       case 1: [res -> platos[1];]
+		       case 2: [res -> platos[2];];
+	return res;
+}
+fun iniMenu recives [int [3] primero, int [3] segundo, int [3] postre] returns nothing{ 
+	primero[0] -> 4;
+	primero[1] -> 2;
+	primero[2] -> 1;
+	segundo[0] -> 7;
+	segundo[1] -> 8;
+	segundo[2] -> 6;
+	postre[0] -> 10;
+	postre[1] -> 12;
+	postre[2] -> 15;
+}
+begin [ 
+{declare: int [3] primero; int [3] segundo; int [3] postre; bool [3] quiero; int [3] elec;}
+	quiero[0] -> True;
+	quiero[1] -> False;
+	quiero[2] -> True; 
+	call iniMenu[primero, segundo, postre];
+ 	if (quiero[0]) do [
+	   elec[0] -> call elijoPlato[primero, X];
+	] else [
+	   elec[0] -> -1;
+	];
+	if (quiero[1]) do [
+	   elec[1] -> call elijoPlato[segundo, Y];
+	] else [
+	   elec[1] -> -1;
+	];
+	if (quiero[2]) do [
+	   elec[2] -> call elijoPlato[postre, Z];
+	] else [
+	   elec[2] -> -1;
+	];
+] 
+end
+ 

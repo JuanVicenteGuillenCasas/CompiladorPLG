@@ -1,0 +1,17 @@
+fun cuentaAtras recives [] returns nothing{
+ {declare: int i; int c;}
+    for (i -> 10, i > 0, i -> i -- 1) do [
+      c -> i--1;
+      i -> c;
+    ];
+}
+begin[
+ {declare: int x; int y;}
+    for (x -> 0, x <= 2, x -> x ++ 1) do [
+      switch (x) case 0: [y -> 5;]
+                 case 1: [y -> 3;]
+                 case 2: [y -> 2;];
+    ];
+    call cuentaAtras[];
+]
+end

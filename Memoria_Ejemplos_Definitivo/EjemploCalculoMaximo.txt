@@ -1,0 +1,33 @@
+fun maximo recives [int [5] a] returns int { 
+   {declare: int i; int max; int aux;}
+	max -> a[0];
+	[
+	  aux -> a[1];
+	  if (max < aux) do [
+	     max -> aux;
+	  ];
+	  aux -> a[2];
+	  if (max < aux) do [
+	     max -> aux;
+	  ];
+	  aux -> a[3];
+	  if (max < aux) do [
+	     max -> aux;
+	  ];
+	  aux -> a[4];
+	  if (max < aux) do [
+	     max -> aux;
+	  ];
+	]
+	return max;
+} 
+begin [ 
+   {declare: int max; int [5] arr;}
+	arr[0] -> -2;
+	arr[1] -> 0;
+	arr[2] -> 2;
+	arr[3] -> 1;
+	arr[4] -> 4;
+	max -> call maximo[arr];
+]
+end

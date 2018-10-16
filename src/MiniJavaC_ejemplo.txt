@@ -1,0 +1,23 @@
+const int A = 100; const Bool B = True;
+fun suma recives [int a1, int a2] return int {
+ {declare: int res;}
+ res -> a1 + a2;
+ return res;
+}
+ begin [ 
+ {declare: int c; int d; Bool encontrado;}    
+ encontrado -> false; 
+ ccoc -> E; 
+ d -> 0;    
+ while (!!encontrado) do [
+ c -> c * d + (2 + 3); 
+ d -> d + 1; 
+ c -> call suma [c,d];
+ if (!! (c <= A)) [
+ encontrado -> B;
+ ]
+ ]
+ res = c\4;
+ ]
+ end
+ 

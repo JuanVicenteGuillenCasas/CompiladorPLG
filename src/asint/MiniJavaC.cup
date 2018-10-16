@@ -1,0 +1,152 @@
+package asint;
+
+import java_cup.runtime.*;
+import alex.AnalizadorLexico;
+import alex.UnidadLexica;
+import errors.GestionErrores;
+
+scan with {: return getScanner().next_token(); :};
+parser code {: 
+   private GestionErrores errores;
+   public void syntax_error(Symbol unidadLexica) {
+     errores.errorSintactico((UnidadLexica)unidadLexica);
+   }
+:};
+init with {: 
+   errores = new GestionErrores();
+   AnalizadorLexico alex = (AnalizadorLexico)getScanner();
+   alex.fijaGestionErrores(errores);
+:};
+
+
+terminal  INT, BEGIN, END , DECLARE, FUN, IF, ELSE, WHILE, FOR, DO , TRUE, FALSE, SWITCH, CASE, IDINT, IDBOOL, RECIVES,
+          RETURNS, RETURN, NOTHING, CALL, CONST, ID, PUNTOCOMA, COMA, DOSPUNTOS, SUMA, RESTA, MULT, DIV, MENORIG, MAYIG, MEN, MAY, IG, NOIG,
+		  NEGAR, AND, OR, ASIG, PARAP, PARCE, CORAP, CORCE, LLAVAP, LLAVCE;
+
+non terminal  CuerpoEntero, decFuncionesCtes, decFun, parametrosEntrada1 , masParametros1, decCte , CuerpoPrograma, 
+			  Bloque, decVar, decBloque, V , T, Tv, Tarray, dimensions ,
+			  Instruccion, Asignacion, Expr , Expr1, Expr2, Expr3, Expr4, Expr5 ,EFin, Ifelsent, whilent, fornt, switchnt, 
+			  cs, callfuncion, parametrosEntrada2, masParametros2 ,instrRet;
+			  
+			  
+
+CuerpoEntero ::= decFuncionesCtes: df CuerpoPrograma: cp {: RESULT = new FullBody((FuncionesAndCtes)df, (Programa)cp); :}
+				| CuerpoPrograma: cp  {: RESULT =  new FullBody((Programa)cp); :}
+				|                     {: RESULT = new FullBody(); :}
+;
+decFuncionesCtes ::= decFun: f decFuncionesCtes: df {: RESULT = new FuncionesAndCtes((Funtion)f , (FuncionesAndCtes)df); :}
+					| decCte: c decFuncionesCtes: df {: RESULT = new FuncionesAndCtes((Constante)c , (FuncionesAndCtes)df); :}
+					| decFun: f              {: RESULT = new FuncionesAndCtes((Funtion)f); :}
+					| decCte: c              {: RESULT = new FuncionesAndCtes((Constante)c); :}
+;
+decFun ::= FUN ID: iden RECIVES CORAP parametrosEntrada1: p1 CORCE RETURNS Tv: ps LLAVAP Bloque: bl LLAVCE  {: RESULT = new Funtion( (String) iden , (Parametros)p1  , (TipoVar)ps ,(ClaseBloque)bl); :}
+;
+parametrosEntrada1 ::= Tv: tip ID: iden masParametros1: mp  {: RESULT = new Parametros((Tipo)tip, (String)iden, (Parametros)mp); :}
+					| Tv: tip ID: iden  {: RESULT = new Parametros((Tipo)tip, (String)iden); :}
+					| Tarray: tarr ID: iden masParametros1: mp {: RESULT = new Parametros((Tipo)tarr, (String)iden, (Parametros)mp); :}
+					| Tarray: tarr ID: iden  {: RESULT = new Parametros((Tipo)tarr, (String)iden); :}
+					|              {: RESULT = new Parametros(); :}
+;
+masParametros1 ::= COMA Tv: tip ID: iden	{: RESULT = new Parametros((Tipo)tip, (String)iden); :}
+					| COMA Tv: tip ID: iden masParametros1: mp {: RESULT = new Parametros((Tipo)tip, (String)iden, (Parametros)mp); :}
+					| COMA Tarray: tip ID: iden {: RESULT = new Parametros((Tipo)tip, (String)iden); :}
+					| COMA Tarray: tip ID: iden masParametros1: mp {: RESULT = new Parametros((Tipo)tip, (String)iden, (Parametros)mp); :}
+;
+decCte ::= CONST Tv: tip ID: id ASIG Expr: e PUNTOCOMA {: RESULT = new Constante((String)id, (Tipo)tip, (Expresion)e); :}
+;
+CuerpoPrograma ::= BEGIN Bloque: b END {: RESULT = new Programa((ClaseBloque)b); :}
+;
+Bloque ::= decVar: dv decBloque: dbl  {: RESULT = new ClaseBloque((DeclaracionVariables)dv, (DeclaracionBloque)dbl); :}
+			| decBloque: dbl  {: RESULT = new ClaseBloque((DeclaracionBloque)dbl); :}
+;
+decVar::= LLAVAP DECLARE DOSPUNTOS V: vars LLAVCE {: RESULT = vars; :}
+;
+decBloque::= Instruccion: i PUNTOCOMA {: RESULT = new DeclaracionBloque((ClaseInstruccion)i); :}
+			| Instruccion: i PUNTOCOMA decBloque: db {: RESULT = new DeclaracionBloque((ClaseInstruccion)i, (DeclaracionBloque)db); :}
+			| CORAP Bloque: b CORCE {: RESULT = new DeclaracionBloque((ClaseBloque)b); :}
+			| CORAP Bloque: b CORCE decBloque: db {: RESULT = new DeclaracionBloque((ClaseBloque)b, (DeclaracionBloque)db); :}
+;
+V ::= T: tp PUNTOCOMA  {: RESULT = new DeclaracionVariables((Variable)tp); :}
+	| T: tp PUNTOCOMA V: vars  {: RESULT = new DeclaracionVariables((Variable)tp, (DeclaracionVariables)vars); :}
+;
+T ::= Tv: tip ID: iden {: RESULT = new Variable((Tipo)tip, (String)iden); :}
+	| Tarray: tarr ID: iden  {: RESULT = new Variable((Tipo)tarr, (String)iden); :}
+;
+Tv ::= IDINT: intege {: RESULT = new TipoVar((String)intege); :}
+	| IDBOOL: boolea {: RESULT = new TipoVar((String)boolea); :}
+	| NOTHING  {: RESULT = new TipoVar(); :}
+;
+Tarray ::= IDINT: intege dimensions: d  {: RESULT = new TipoArray((String)intege, (ClaseDimensiones)d); :}
+		| IDBOOL: boolea dimensions: d  {: RESULT = new TipoArray((String)boolea, (ClaseDimensiones)d); :}
+;
+dimensions ::=  CORAP INT: size CORCE dimensions: dim {: RESULT = new ClaseDimensiones((String)size, (ClaseDimensiones)dim); :}
+			|  CORAP INT: size CORCE {: RESULT = new ClaseDimensiones((String)size); :}
+;		
+Instruccion ::= Asignacion: a {: RESULT = a; :}
+			| Ifelsent: ifs {: RESULT = ifs; :}
+			| whilent: w {: RESULT = w; :}
+			| fornt: f {: RESULT = f; :}
+			| switchnt: s {: RESULT = s; :}
+   			| callfuncion: cll {: RESULT = cll; :}
+			| instrRet: rt {: RESULT = rt; :}
+;
+Asignacion ::= ID: iden ASIG Expr: e {: RESULT = new InsAsignacion((String)iden, (Expresion)e); :}
+			| ID: iden dimensions: d ASIG Expr: e {: RESULT = new InsAsignacion((String)iden,(ClaseDimensiones)d ,(Expresion)e); :}
+; 
+Expr ::= Expr: e0 SUMA Expr1:e1 {: RESULT = new ExpresionBinaria((Expresion)e0,(Expresion)e1, "+"); :}
+		|Expr: e0 RESTA Expr1:e1 {: RESULT = new ExpresionBinaria((Expresion)e0,(Expresion)e1, "-"); :}
+		|Expr1: e1 {: RESULT = e1; :}
+;
+Expr1 ::= Expr1: e1 MULT Expr2: e2 {: RESULT = new ExpresionBinaria((Expresion)e1, (Expresion)e2, "*"); :}
+		 |Expr1: e1 DIV Expr2: e2 {: RESULT = new ExpresionBinaria((Expresion)e1, (Expresion)e2, "/"); :}
+		 |Expr2: e2 {: RESULT = e2; :}
+;
+Expr2 ::= Expr2: e2 MENORIG Expr3: e3 {: RESULT = new ExpresionBinaria((Expresion)e2, (Expresion)e3, "<="); :}
+         |Expr2: e2 MAYIG Expr3: e3 {: RESULT = new ExpresionBinaria((Expresion)e2, (Expresion)e3, ">="); :}
+		 |Expr2: e2 MEN Expr3: e3 {: RESULT = new ExpresionBinaria((Expresion)e2, (Expresion)e3, "<"); :}
+		 |Expr2: e2 MAY Expr3: e3 {: RESULT = new ExpresionBinaria((Expresion)e2, (Expresion)e3, ">"); :}
+		 |Expr2: e2 IG Expr3: e3 {: RESULT = new ExpresionBinaria((Expresion)e2, (Expresion)e3, "="); :}
+		 |Expr2: e2 NOIG Expr3: e3 {: RESULT = new ExpresionBinaria((Expresion)e2, (Expresion)e3, "!="); :}
+		 |Expr3: e3 {: RESULT = e3; :}
+;
+Expr3 ::= Expr3: e3 AND Expr4: e4 {: RESULT = new ExpresionBinaria((Expresion)e3, (Expresion)e4, "AND"); :}
+		 |Expr4: e4  {: RESULT = e4; :}
+;
+Expr4 ::= Expr4: e4 OR Expr5: e5 {: RESULT = new ExpresionBinaria((Expresion)e4, (Expresion)e5, "OR"); :}
+		 |Expr5: e5 {: RESULT = e5; :}
+;
+Expr5 ::= EFin: ef  {: RESULT = ef; :}
+		 |PARAP Expr: e0 PARCE {: RESULT = new ExpresionUnaria((Expresion)e0); :}
+		 |NEGAR EFin: ef {: RESULT = new ExpresionUnaria((Expresion)ef , "!!"); :}
+		 |NEGAR PARAP Expr: e0 PARCE {: RESULT = new ExpresionUnaria((Expresion)e0 , "!!"); :}
+;
+EFin ::= INT: integer {: RESULT = new ExpresionUnaria((String)integer); :}
+		|FALSE: f {: RESULT = new ExpresionUnaria((String)f); :}
+		|TRUE: t {: RESULT = new ExpresionUnaria((String)t); :}
+		|ID: iden {: RESULT = new ExpresionUnaria((String)iden); :}
+		|ID: iden dimensions: dim {: RESULT = new ExpresionUnaria((String)iden, (ClaseDimensiones)dim); :}
+		|callfuncion: cf {: RESULT = new ExpresionUnaria((InstruccionCall)cf); :}
+;
+Ifelsent ::= IF PARAP Expr:e PARCE DO CORAP Bloque: b CORCE {: RESULT = new InstruccionIfElse((Expresion)e, (ClaseBloque)b); :}
+			|IF PARAP Expr:e PARCE DO CORAP Bloque: b1 CORCE ELSE CORAP Bloque: b2 CORCE {: RESULT = new InstruccionIfElse((Expresion)e, (ClaseBloque)b1 ,(ClaseBloque)b2 ); :}
+;
+whilent ::= WHILE PARAP Expr:e PARCE DO CORAP Bloque:b CORCE {: RESULT = new InstruccionWhile((Expresion)e, (ClaseBloque)b); :}
+;
+fornt ::= FOR PARAP Asignacion:a1 COMA Expr:e COMA Asignacion: a2 PARCE DO CORAP Bloque: b CORCE {: RESULT = new InstruccionFor((InsAsignacion)a1, (Expresion)e, (InsAsignacion)a2, (ClaseBloque)b); :}
+;
+switchnt ::= SWITCH PARAP ID: iden PARCE cs: c {: RESULT = new InstruccionSwitch((String)iden, (ClaseCases)c); :}
+;
+cs ::= CASE INT: enter DOSPUNTOS CORAP Bloque: b CORCE cs:c {: RESULT = new ClaseCases((String)enter, (ClaseBloque)b, (ClaseCases)c); :}
+	| CASE INT: enter DOSPUNTOS CORAP Bloque: b CORCE {: RESULT = new ClaseCases((String)enter,(ClaseBloque)b); :}
+;
+callfuncion ::= CALL ID: iden CORAP parametrosEntrada2: entr CORCE {: RESULT = new InstruccionCall((String)iden, (ListaExpresiones)entr); :}
+;
+parametrosEntrada2 ::= Expr: e masParametros2: mp {: RESULT = new ListaExpresiones((Expresion)e, (ListaExpresiones)mp ); :}
+					| Expr: e {: RESULT = new ListaExpresiones((Expresion)e); :}
+					|      {: RESULT = new ListaExpresiones(); :}
+;
+masParametros2 ::= COMA Expr: e  masParametros2: mp {: RESULT = new ListaExpresiones((Expresion)e, (ListaExpresiones)mp ); :}
+					| COMA Expr: e {: RESULT = new ListaExpresiones((Expresion)e); :}
+;
+instrRet ::= RETURN Expr: e  {: RESULT = new InstruccionReturn((Expresion)e); :}
+;
